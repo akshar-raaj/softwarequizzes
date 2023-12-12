@@ -44,7 +44,7 @@ def read_question(pk: int) -> Question:
     return question
 
 
-def list_questions(order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, category: str = None):
+def list_questions(order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, category: str = None):
     engine = get_engine()
     statement = select(Question).options(selectinload(Question.choices))
     if order_by and order_direction:
@@ -57,6 +57,8 @@ def list_questions(order_by: str = Question.created_at.name, order_direction: Or
         statement = statement.limit(limit)
     if offset:
         statement = statement.offset(offset)
+    if subdomain:
+        statement = statement.where(Question.subdomain == subdomain)
     with Session(engine) as session:
         result = session.execute(statement)
         questions = result.scalars().all()
