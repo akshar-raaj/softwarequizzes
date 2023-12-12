@@ -1,4 +1,3 @@
-import random
 from fastapi import FastAPI, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,5 +53,4 @@ def post_choices(question_id: int, choices: ChoicesType):
 @app.get("/questions")
 def get_questions(order_by=Question.created_at.name, order_direction=OrderDirection.DESC, limit=20, offset=0, subdomain=None, category=None):
     questions = list_questions(order_by=order_by, order_direction=order_direction, limit=limit, offset=offset, subdomain=subdomain, category=category)
-    random.shuffle(questions)
     return questions
