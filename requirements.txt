@@ -5,3 +5,4 @@ SQLAlchemy
 PyMySQL
 cryptography
 gunicorn
+alembic
