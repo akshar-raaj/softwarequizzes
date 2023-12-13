@@ -32,7 +32,7 @@ def home():
 
 @app.post("/questions")
 def post_question(question: QuestionType):
-    question_id = create_instance(Question, {'text': question.text, 'subdomain': question.subdomain, 'level': question.level, 'explanation': question.explanation})
+    question_id = create_instance(Question, {'text': question.text, 'subdomain': question.subdomain, 'level': question.level, 'explanation': question.explanation, 'snippet': question.snippet})
     question = read_question(question_id)
     return question
 

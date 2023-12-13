@@ -14,6 +14,7 @@ class QuestionType(BaseModel):
     text: str
     subdomain: str
     explanation: str
+    snippet: str = None
     level: DifficultyLevel
     choices: List[ChoiceType] = []
 
