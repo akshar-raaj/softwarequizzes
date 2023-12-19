@@ -1,0 +1,18 @@
+name: Deploy
+on: push
+jobs:
+  production-deployment:
+    name: Production deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Production deployment
+        uses: appleboy/ssh-action@master
+        with:
+          host: api.softwarequizzes.com
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/softwarequizzes
+            git pull origin master
+            kill $(cat /tmp/softwarequizzes.pid)
+            /home/ubuntu/.pyenv/versions/awsquiz/bin/gunicorn main:app --config ./gunicorn.conf.py
