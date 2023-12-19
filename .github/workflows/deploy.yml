@@ -15,5 +15,6 @@ jobs:
             cd /home/ubuntu/softwarequizzes
             git pull origin master
             kill $(cat /tmp/softwarequizzes.pid)
+            sleep 3
             /bin/bash start.sh
 
