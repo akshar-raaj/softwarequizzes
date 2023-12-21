@@ -10,7 +10,7 @@ For delete rows, it's name should be delete_*.
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from orm.models import Choice, Question
+from orm.models import Choice, Question, User
 from orm.engine import get_engine
 
 from enums import OrderDirection, DifficultyLevel
@@ -42,6 +42,14 @@ def read_question(pk: int) -> Question:
     with Session(engine) as session:
         question = session.scalar(statement)
     return question
+
+
+def read_user(email: str) -> User:
+    engine = get_engine()
+    statement = select(User).where(User.email == email)
+    with Session(engine) as session:
+        user = session.scalar(statement)
+    return user
 
 
 def list_questions(order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, category: str = None, difficulty_level: DifficultyLevel = None):

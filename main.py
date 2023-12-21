@@ -1,13 +1,14 @@
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, Response, status, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from pydantic_types import QuestionType, ChoicesType
+from pydantic_types import QuestionType, ChoicesType, RegisterUser
 
 from orm.models import Question
 from enums import OrderDirection
 
 from services import create_question_choices, read_question, list_questions, create_instance
+from auth import register_user
 
 
 app = FastAPI()
@@ -54,3 +55,13 @@ def post_choices(question_id: int, choices: ChoicesType):
 def get_questions(order_by=Question.created_at.name, order_direction=OrderDirection.DESC, limit=20, offset=0, subdomain=None, category=None, difficulty_level=None):
     questions = list_questions(order_by=order_by, order_direction=order_direction, limit=limit, offset=offset, subdomain=subdomain, category=category, difficulty_level=difficulty_level)
     return questions
+
+
+@app.post("/register")
+def register(user: RegisterUser):
+    if len(user.email) < 6:
+        raise HTTPException(status_code=401, detail="Email too short")
+    created_id, message = register_user(user.email, user.password)
+    if created_id is None:
+        raise HTTPException(status_code=401, detail=message)
+    return {'detail': 'User registered'}

@@ -21,3 +21,8 @@ class QuestionType(BaseModel):
 
 class ChoicesType(BaseModel):
     choices: list[ChoiceType]
+
+
+class RegisterUser(BaseModel):
+    email: str
+    password: str

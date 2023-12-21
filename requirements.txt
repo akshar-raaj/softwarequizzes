@@ -6,3 +6,5 @@ PyMySQL
 cryptography
 gunicorn
 alembic
+python-jose[cryptography]
+passlib[bcrypt]
