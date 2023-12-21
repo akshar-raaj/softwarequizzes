@@ -14,6 +14,7 @@ jobs:
           script: |
             cd /home/ubuntu/softwarequizzes
             git pull origin master
+            /home/ubuntu/.pyenv/versions/awsquiz/bin/alembic upgrade head         
             kill $(cat /tmp/softwarequizzes.pid)
             sleep 3
             /bin/bash start.sh
