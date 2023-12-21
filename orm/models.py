@@ -36,3 +36,14 @@ class Choice(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     is_answer: Mapped[bool]
     question: Mapped["Question"] = relationship(back_populates="choices")
+
+
+class User(Base):
+    __tablename__ = "auth_user"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    password: Mapped[str] = mapped_column(String(100))
+    email: Mapped[str] = mapped_column(String(100))
+
+    def __repr__(self) -> str:
+        return f"User: {self.email}"
