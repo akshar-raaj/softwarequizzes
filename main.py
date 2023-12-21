@@ -51,6 +51,6 @@ def post_choices(question_id: int, choices: ChoicesType):
 
 
 @app.get("/questions")
-def get_questions(order_by=Question.created_at.name, order_direction=OrderDirection.DESC, limit=20, offset=0, subdomain=None, category=None):
-    questions = list_questions(order_by=order_by, order_direction=order_direction, limit=limit, offset=offset, subdomain=subdomain, category=category)
+def get_questions(order_by=Question.created_at.name, order_direction=OrderDirection.DESC, limit=20, offset=0, subdomain=None, category=None, difficulty_level=None):
+    questions = list_questions(order_by=order_by, order_direction=order_direction, limit=limit, offset=offset, subdomain=subdomain, category=category, difficulty_level=difficulty_level)
     return questions

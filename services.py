@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, selectinload
 from orm.models import Choice, Question
 from orm.engine import get_engine
 
-from enums import OrderDirection
+from enums import OrderDirection, DifficultyLevel
 
 
 def create_question_choices(question_id: int, choices):
@@ -44,7 +44,7 @@ def read_question(pk: int) -> Question:
     return question
 
 
-def list_questions(order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, category: str = None):
+def list_questions(order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, category: str = None, difficulty_level: DifficultyLevel = None):
     engine = get_engine()
     statement = select(Question).options(selectinload(Question.choices))
     if order_by and order_direction:
@@ -59,6 +59,8 @@ def list_questions(order_by: str = Question.created_at.name, order_direction: Or
         statement = statement.offset(offset)
     if subdomain:
         statement = statement.where(Question.subdomain == subdomain)
+    if difficulty_level:
+        statement = statement.where(Question.level == difficulty_level)
     with Session(engine) as session:
         result = session.execute(statement)
         questions = result.scalars().all()
