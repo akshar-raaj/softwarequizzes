@@ -1,4 +1,5 @@
 from typing import List
+from typing import Optional
 import enum
 from datetime import datetime
 
@@ -17,11 +18,11 @@ class Question(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     text: Mapped[str] = mapped_column(Text)
-    snippet: Mapped[str] = mapped_column(Text)
+    snippet: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     subdomain: Mapped[str] = mapped_column(String(20))
-    explanation: Mapped[str] = mapped_column(Text)
+    explanation: Mapped[Optional[str]] = mapped_column(Text)
     level: Mapped[enum.Enum] = mapped_column(Enum(DifficultyLevel))
     choices: Mapped[List["Choice"]] = relationship(back_populates="question", cascade="all, delete-orphan")
 
