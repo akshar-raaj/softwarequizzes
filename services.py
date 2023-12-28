@@ -20,6 +20,7 @@ from enums import OrderDirection, DifficultyLevel
 
 def create_question_choices(question_id: int, choices):
     INVALID_QUESTION_ID = "Invalid question id"
+    ERROR_MESSAGE = "Something is wrong"
     engine = get_engine()
     with Session(engine) as session:
         question = session.get(Question, question_id)
@@ -29,12 +30,13 @@ def create_question_choices(question_id: int, choices):
             return False, INVALID_QUESTION_ID
         for choice in choices:
             instance = Choice(question_id=question_id, text=choice.text, is_answer=choice.is_answer)
-            try:
-                session.add(instance)
-            except Exception as exc:
-                session.rollback()
-                raise exc
-        session.commit()
+            session.add(instance)
+        try:
+            # session.flush() automatically happens on invoking commit().
+            session.commit()
+        except Exception as exc:
+            # No need to explicitly call session.rollback(). It happens in case we are returning without commit.
+            return False, ERROR_MESSAGE
     return True, ''
 
 
