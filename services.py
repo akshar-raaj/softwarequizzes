@@ -10,8 +10,10 @@ For delete rows, it's name should be delete_*.
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from orm.models import Choice, Question, User
+from orm.models import Choice, Question, User, UserAnswer
 from orm.engine import get_engine
+
+from pydantic_types import UserAnswerType
 
 from enums import OrderDirection, DifficultyLevel
 
@@ -29,10 +31,10 @@ def create_question_choices(question_id: int, choices):
             instance = Choice(question_id=question_id, text=choice.text, is_answer=choice.is_answer)
             try:
                 session.add(instance)
-                session.commit()
             except Exception as exc:
                 session.rollback()
                 raise exc
+        session.commit()
     return True, ''
 
 
