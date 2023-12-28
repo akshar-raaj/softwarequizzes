@@ -80,8 +80,8 @@ def list_questions(order_by: str = Question.created_at.name, order_direction: Or
     if difficulty_level:
         statement = statement.where(Question.level == difficulty_level)
     with Session(engine) as session:
-        result = session.execute(statement)
-        questions = result.scalars().all()
+        result = session.scalars(statement)
+        questions = result.all()
     return questions
 
 
@@ -90,19 +90,19 @@ def create_instance(model, data: dict) -> int:
     instance = model(**data)
     created_id = None
     with Session(engine) as session:
+        session.add(instance)
         try:
-            session.add(instance)
             session.commit()
             created_id = instance.id
         except Exception as exc:
-            session.rollback()
-            raise exc
+            pass
     return created_id
 
 
 def create_user_answer(user: User, user_answer: UserAnswerType):
     INVALID_QUESTION_ID = "Invalid question id"
     INVALID_CHOICE_ID = "Invalid choice id"
+    ERROR_MESSAGE = "Something is wrong"
     engine = get_engine()
     with Session(engine) as session:
         question = session.get(Question, user_answer.question_id)
@@ -115,10 +115,9 @@ def create_user_answer(user: User, user_answer: UserAnswerType):
         if choice is None:
             return False, INVALID_CHOICE_ID
         instance = UserAnswer(question_id=user_answer.question_id, choice_id=user_answer.choice_id, user_id=user.id)
+        session.add(instance)
         try:
-            session.add(instance)
             session.commit()
         except Exception as exc:
-            session.rollback()
-            raise exc
+            return False, ERROR_MESSAGE
     return True, ''
