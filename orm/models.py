@@ -50,3 +50,14 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"User: {self.email}"
+
+
+class UserAnswer(Base):
+    __tablename__ = "user_answers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("auth_user.id"))
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"))
+    choice_id: Mapped[int] = mapped_column(ForeignKey("choices.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

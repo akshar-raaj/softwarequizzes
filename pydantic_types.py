@@ -26,3 +26,8 @@ class ChoicesType(BaseModel):
 class RegisterUser(BaseModel):
     email: str
     password: str
+
+
+class UserAnswerType(BaseModel):
+    question_id: int
+    choice_id: int

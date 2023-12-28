@@ -90,3 +90,27 @@ def create_instance(model, data: dict) -> int:
             session.rollback()
             raise exc
     return created_id
+
+
+def create_user_answer(user: User, user_answer: UserAnswerType):
+    INVALID_QUESTION_ID = "Invalid question id"
+    INVALID_CHOICE_ID = "Invalid choice id"
+    engine = get_engine()
+    with Session(engine) as session:
+        question = session.get(Question, user_answer.question_id)
+        # TODO: Modify the filter condition to ensure this choice belongs to this question.
+        choice = session.get(Choice, user_answer.choice_id)
+        if question is None:
+            # Session will be closed, context manager will ensure that
+            # https://stackoverflow.com/questions/9885217/in-python-if-i-return-inside-a-with-block-will-the-file-still-close
+            return False, INVALID_QUESTION_ID
+        if choice is None:
+            return False, INVALID_CHOICE_ID
+        instance = UserAnswer(question_id=user_answer.question_id, choice_id=user_answer.choice_id, user_id=user.id)
+        try:
+            session.add(instance)
+            session.commit()
+        except Exception as exc:
+            session.rollback()
+            raise exc
+    return True, ''
