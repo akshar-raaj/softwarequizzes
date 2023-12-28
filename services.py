@@ -42,15 +42,21 @@ def read_question(pk: int) -> Question:
     engine = get_engine()
     statement = select(Question).options(selectinload(Question.choices)).where(Question.id == pk)
     with Session(engine) as session:
-        question = session.scalar(statement)
+        question = session.scalars(statement).first()
     return question
 
 
-def read_user(email: str) -> User:
+def read_user(email: str = None, pk: int = None) -> User:
+    # XOR
+    if not (bool(email) != bool(pk)):
+        raise AssertionError('Either email or id should be provided. Both should not be provided.')
     engine = get_engine()
-    statement = select(User).where(User.email == email)
+    if email is not None:
+        statement = select(User).where(User.email == email)
+    if pk is not None:
+        statement = select(User).where(User.id == pk)
     with Session(engine) as session:
-        user = session.scalar(statement)
+        user = session.scalars(statement).first()
     return user
 
 
