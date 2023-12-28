@@ -1,14 +1,17 @@
-from fastapi import FastAPI, Response, status, HTTPException
+from typing import Annotated
+from fastapi import FastAPI, Response, status, HTTPException, Depends
 from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic_types import QuestionType, ChoicesType, RegisterUser
 
-from orm.models import Question
+from orm.models import Question, User
 from enums import OrderDirection
 
 from services import create_question_choices, read_question, list_questions, create_instance
-from auth import register_user
+from auth import register_user, get_current_user, authenticate
+from constants import PLACEHOLDER_USER_EMAIL, ADMIN_EMAIL
 
 
 app = FastAPI()
@@ -32,14 +35,18 @@ def home():
 
 
 @app.post("/questions")
-def post_question(question: QuestionType):
+def post_question(question: QuestionType, user: Annotated[User, Depends(get_current_user)]):
+    if user.email != ADMIN_EMAIL:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     question_id = create_instance(Question, {'text': question.text, 'subdomain': question.subdomain, 'level': question.level, 'explanation': question.explanation, 'snippet': question.snippet})
     question = read_question(question_id)
     return question
 
 
 @app.post("/questions/{question_id}/choices")
-def post_choices(question_id: int, choices: ChoicesType):
+def post_choices(question_id: int, choices: ChoicesType, user: Annotated[User, Depends(get_current_user)]):
+    if user.email != ADMIN_EMAIL:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     try:
         created, message = create_question_choices(question_id, choices.choices)
         if not created:
@@ -60,8 +67,16 @@ def get_questions(order_by=Question.created_at.name, order_direction=OrderDirect
 @app.post("/register")
 def register(user: RegisterUser):
     if len(user.email) < 6:
-        raise HTTPException(status_code=401, detail="Email too short")
-    created_id, message = register_user(user.email, user.password)
-    if created_id is None:
-        raise HTTPException(status_code=401, detail=message)
-    return {'detail': 'User registered'}
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email too short")
+    token, message = register_user(user.email, user.password)
+    if token is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
+    return {'access_token': token, "token_type": "bearer", 'message': message}
+
+
+@app.post("/token")
+def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    token, message = authenticate(form_data)
+    if token is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
+    return {"access_token": token, "token_type": "bearer"}

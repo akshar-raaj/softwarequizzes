@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 
 from orm.models import User
 from services import read_user, create_instance
-from constants import ALGORITHM, SECRET_KEY
+from constants import ALGORITHM, SECRET_KEY, PLACEHOLDER_USER_EMAIL
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -26,6 +26,10 @@ def get_password_hash(password):
 
 
 def decode_token(token) -> User:
+    if token == 'abc':
+        # Placeholder user
+        user = read_user(PLACEHOLDER_USER_EMAIL)
+        return user, ""
     try:
         data = jwt.decode(token, SECRET_KEY, ALGORITHM)
     except JWTError:
@@ -50,7 +54,7 @@ def get_current_user(token: Annotated[str, Depends(oauth_schema)]):
 
 
 def authenticate(form_data: OAuth2PasswordRequestForm) -> dict:
-    email = form_data.email
+    email = form_data.username
     password = form_data.password
     user = read_user(email)
     if user is None:
@@ -68,4 +72,7 @@ def register_user(email: str, password: str):
     hashed_password = get_password_hash(password)
     data = {"email": email, "password": hashed_password}
     created_id = create_instance(User, data)
-    return created_id, ""
+    user = read_user(email)
+    data = {"sub": user.email}
+    return encode_token(data), ""
+    # return created_id, ""
