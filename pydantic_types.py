@@ -4,11 +4,13 @@ from pydantic import BaseModel
 from enums import DifficultyLevel
 
 
+# Used to create a choice for question.
 class ChoiceType(BaseModel):
     text: str
     is_answer: bool = None
 
 
+# Used to create a question
 class QuestionType(BaseModel):
     id: int = None
     text: str
@@ -19,15 +21,31 @@ class QuestionType(BaseModel):
     choices: List[ChoiceType] = []
 
 
+# Used to create choices for a question
 class ChoicesType(BaseModel):
     choices: list[ChoiceType]
 
 
+class ChoiceReadType(BaseModel):
+    id: int
+    text: str
+
+
+class QuestionReadType(BaseModel):
+    id: int
+    text: str
+    snippet: str | None = None
+    explanation: str | None = None
+    choices: list[ChoiceReadType]
+
+
+# Used to create an user
 class RegisterUser(BaseModel):
     email: str
     password: str
 
 
+# Used to allow users to answer a question
 class UserAnswerType(BaseModel):
     question_id: int
     choice_id: int
