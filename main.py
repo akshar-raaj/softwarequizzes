@@ -4,12 +4,12 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 
-from pydantic_types import QuestionType, ChoicesType, RegisterUser
+from pydantic_types import QuestionType, ChoicesType, RegisterUser, UserAnswerType
 
 from orm.models import Question, User
 from enums import OrderDirection
 
-from services import create_question_choices, read_question, list_questions, create_instance
+from services import create_question_choices, read_question, list_questions, create_instance, create_user_answer
 from auth import register_user, get_current_user, authenticate
 from constants import PLACEHOLDER_USER_EMAIL, ADMIN_EMAIL
 
@@ -53,7 +53,7 @@ def post_choices(question_id: int, choices: ChoicesType, user: Annotated[User, D
             return JSONResponse(content={"message": message}, status_code=status.HTTP_400_BAD_REQUEST)
     except Exception:
         # Log an error with message as exc
-        return Response(content="Internal Server Error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     question = read_question(question_id)
     return question
 
@@ -62,6 +62,25 @@ def post_choices(question_id: int, choices: ChoicesType, user: Annotated[User, D
 def get_questions(order_by=Question.created_at.name, order_direction=OrderDirection.DESC, limit=20, offset=0, subdomain=None, category=None, difficulty_level=None):
     questions = list_questions(order_by=order_by, order_direction=order_direction, limit=limit, offset=offset, subdomain=subdomain, category=category, difficulty_level=difficulty_level)
     return questions
+
+
+@app.post("/answers")
+def post_answers(answer: UserAnswerType, user: Annotated[User, Depends(get_current_user)]):
+    try:
+        created, message = create_user_answer(user, answer)
+        if not created:
+            return JSONResponse(content={"message": message}, status_code=status.HTTP_400_BAD_REQUEST)
+    except Exception:
+        # Log an error with message as exc
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    question = read_question(answer.question_id)
+    correct_choice = list(filter(lambda choice: choice.is_answer, question.choices))[0]
+    data = {
+        'correct': correct_choice.id == answer.choice_id,
+        'answer_id': correct_choice.id
+    }
+    return data
+    # Find the actual answer for this question
 
 
 @app.post("/register")
