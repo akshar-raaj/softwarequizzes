@@ -16,6 +16,7 @@ from orm.engine import get_engine
 from pydantic_types import UserAnswerType, UserAnswerTypeBulk
 
 from enums import OrderDirection, DifficultyLevel
+from constants import PLACEHOLDER_USER_EMAIL
 
 
 def create_question_choices(question_id: int, choices):
@@ -134,3 +135,18 @@ def create_user_answers(user: User, user_answers: UserAnswerTypeBulk):
         except Exception as exc:
             return False, "Error"
     return True, ''
+
+
+def fetch_user_answers(question_ids: list, user: User):
+    """
+    Given a list of question ids, find the answers given by the specified user for these questions.
+    The return would be in the following form: {<question_id>: <choice_id>}.
+    """
+    if user.email == PLACEHOLDER_USER_EMAIL:
+        return {}
+    engine = get_engine()
+    with Session(engine) as session:
+        statement = select(UserAnswer).where(UserAnswer.question_id.in_(question_ids)).where(UserAnswer.user_id == user.id)
+        result = session.scalars(statement)
+        rows = result.all()
+    return {row.question_id: row.choice_id for row in rows}
