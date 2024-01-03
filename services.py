@@ -37,6 +37,8 @@ def create_question_choices(question_id: int, choices):
             session.commit()
         except Exception as exc:
             # No need to explicitly call session.rollback(). It happens in case we are returning without commit.
+            # logger.error() is the right candidate to be used here.
+            print(exc)
             return False, ERROR_MESSAGE
     return True, ''
 

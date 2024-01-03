@@ -1,6 +1,5 @@
 from typing import Annotated
-from fastapi import FastAPI, Response, status, HTTPException, Depends
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, status, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,7 +8,7 @@ from pydantic_types import QuestionType, ChoicesType, RegisterUser, UserAnswerTy
 from orm.models import Question, User
 from enums import OrderDirection
 
-from services import create_question_choices, read_question, list_questions, create_instance, create_user_answer, create_user_answers, read_user, fetch_user_answers, fetch_correct_answers
+from services import create_question_choices, read_question, list_questions, create_instance, create_user_answer, create_user_answers, fetch_user_answers, fetch_correct_answers
 from auth import register_user, get_current_user, authenticate
 from constants import ADMIN_EMAIL, PLACEHOLDER_USER_EMAIL
 
@@ -37,8 +36,10 @@ def home():
 @app.post("/questions")
 def post_question(question: QuestionType, user: Annotated[User, Depends(get_current_user)]):
     if user.email != ADMIN_EMAIL:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     question_id = create_instance(Question, {'text': question.text, 'subdomain': question.subdomain, 'level': question.level, 'explanation': question.explanation, 'snippet': question.snippet})
+    if question_id is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Something went wrong")
     question = read_question(question_id)
     return question
 
@@ -46,14 +47,10 @@ def post_question(question: QuestionType, user: Annotated[User, Depends(get_curr
 @app.post("/questions/{question_id}/choices")
 def post_choices(question_id: int, choices: ChoicesType, user: Annotated[User, Depends(get_current_user)]):
     if user.email != ADMIN_EMAIL:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    try:
-        created, message = create_question_choices(question_id, choices.choices)
-        if not created:
-            return JSONResponse(content={"message": message}, status_code=status.HTTP_400_BAD_REQUEST)
-    except Exception:
-        # Log an error with message as exc
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    created, message = create_question_choices(question_id, choices.choices)
+    if not created:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
     question = read_question(question_id)
     return question
 
@@ -85,7 +82,7 @@ def post_answers(answer: UserAnswerType, user: Annotated[User, Depends(get_curre
     try:
         created, message = create_user_answer(user, answer)
         if not created:
-            return JSONResponse(content={"message": message}, status_code=status.HTTP_400_BAD_REQUEST)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
     except Exception:
         # Log an error with message as exc
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
