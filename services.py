@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, selectinload
 from orm.models import Choice, Question, User, UserAnswer
 from orm.engine import get_engine
 
-from pydantic_types import UserAnswerType
+from pydantic_types import UserAnswerType, UserAnswerTypeBulk
 
 from enums import OrderDirection, DifficultyLevel
 
@@ -120,4 +120,17 @@ def create_user_answer(user: User, user_answer: UserAnswerType):
             session.commit()
         except Exception as exc:
             return False, ERROR_MESSAGE
+    return True, ''
+
+
+def create_user_answers(user: User, user_answers: UserAnswerTypeBulk):
+    engine = get_engine()
+    with Session(engine) as session:
+        for user_answer in user_answers:
+            instance = UserAnswer(question_id=user_answer.question_id, choice_id=user_answer.choice_id, user_id=user.id)
+            session.add(instance)
+        try:
+            session.commit()
+        except Exception as exc:
+            return False, "Error"
     return True, ''

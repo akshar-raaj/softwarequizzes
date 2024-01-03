@@ -49,3 +49,7 @@ class RegisterUser(BaseModel):
 class UserAnswerType(BaseModel):
     question_id: int
     choice_id: int
+
+
+class UserAnswerTypeBulk(BaseModel):
+    answers: list[UserAnswerType]

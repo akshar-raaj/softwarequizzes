@@ -4,14 +4,14 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 
-from pydantic_types import QuestionType, ChoicesType, RegisterUser, UserAnswerType, ChoiceReadType, QuestionReadType
+from pydantic_types import QuestionType, ChoicesType, RegisterUser, UserAnswerType, UserAnswerTypeBulk, ChoiceReadType, QuestionReadType
 
 from orm.models import Question, User
 from enums import OrderDirection
 
-from services import create_question_choices, read_question, list_questions, create_instance, create_user_answer
+from services import create_question_choices, read_question, list_questions, create_instance, create_user_answer, create_user_answers
 from auth import register_user, get_current_user, authenticate
-from constants import PLACEHOLDER_USER_EMAIL, ADMIN_EMAIL
+from constants import ADMIN_EMAIL
 
 
 app = FastAPI()
@@ -88,13 +88,23 @@ def post_answers(answer: UserAnswerType, user: Annotated[User, Depends(get_curre
         'answer_id': correct_choice.id
     }
     return data
-    # Find the actual answer for this question
+
+
+@app.post("/answers/bulk")
+def post_answers_bulk(answers: UserAnswerTypeBulk, user: Annotated[User, Depends(get_current_user)]):
+    created, message = create_user_answers(user, answers.answers)
+    data = {
+        "message": "Success"
+    }
+    return data
 
 
 @app.post("/register")
 def register(user: RegisterUser):
     if len(user.email) < 6:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email too short")
+    if len(user.password) < 6:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password too short")
     token, message = register_user(user.email, user.password)
     if token is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
