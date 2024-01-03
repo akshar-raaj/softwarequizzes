@@ -78,6 +78,8 @@ def list_questions(order_by: str = Question.created_at.name, order_direction: Or
         statement = statement.offset(offset)
     if subdomain:
         statement = statement.where(Question.subdomain == subdomain)
+    else:
+        statement = statement.where(Question.subdomain.in_(['python', 'javascript', 'sql']))
     if difficulty_level:
         statement = statement.where(Question.level == difficulty_level)
     with Session(engine) as session:
