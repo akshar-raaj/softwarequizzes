@@ -9,9 +9,9 @@ from pydantic_types import QuestionType, ChoicesType, RegisterUser, UserAnswerTy
 from orm.models import Question, User
 from enums import OrderDirection
 
-from services import create_question_choices, read_question, list_questions, create_instance, create_user_answer, create_user_answers, read_user, fetch_user_answers
+from services import create_question_choices, read_question, list_questions, create_instance, create_user_answer, create_user_answers, read_user, fetch_user_answers, fetch_correct_answers
 from auth import register_user, get_current_user, authenticate
-from constants import ADMIN_EMAIL
+from constants import ADMIN_EMAIL, PLACEHOLDER_USER_EMAIL
 
 
 app = FastAPI()
@@ -64,13 +64,18 @@ def get_questions(user: Annotated[User, Depends(get_current_user)], order_by=Que
     to_return = []
     question_ids = [question.id for question in questions]
     question_answer_map = fetch_user_answers(question_ids, user)
+    if user.email != PLACEHOLDER_USER_EMAIL:
+        question_correct_choice_map = fetch_correct_answers(question_ids)
     for question in questions:
         choice_types = []
         for choice in question.choices:
             choice_type = ChoiceReadType(id=choice.id, text=choice.text)
             choice_types.append(choice_type)
         answer_id=question_answer_map.get(question.id)
-        question_type = QuestionReadType(id=question.id, text=question.text, snippet=question.snippet, explanation=question.explanation, choices=choice_types, user_answer_id=answer_id)
+        correct_choice = None
+        if user.email != PLACEHOLDER_USER_EMAIL:
+            correct_choice = question_correct_choice_map.get(question.id)
+        question_type = QuestionReadType(id=question.id, text=question.text, snippet=question.snippet, explanation=question.explanation, choices=choice_types, user_answer_id=answer_id, correct_answer_id=correct_choice)
         to_return.append(question_type)
     return to_return
 

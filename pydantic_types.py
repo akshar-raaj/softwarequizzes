@@ -39,6 +39,7 @@ class QuestionReadType(BaseModel):
     choices: list[ChoiceReadType]
     # If the user has already answered this question, then populate user_answer_id
     user_answer_id: int | None = None
+    correct_answer_id: int | None = None
 
 
 # Used to create an user

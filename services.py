@@ -150,3 +150,16 @@ def fetch_user_answers(question_ids: list, user: User):
         result = session.scalars(statement)
         rows = result.all()
     return {row.question_id: row.choice_id for row in rows}
+
+
+def fetch_correct_answers(question_ids: list):
+    """
+    Given a list of question ids, find the answers given by the specified user for these questions.
+    The return would be in the following form: {<question_id>: <choice_id>}.
+    """
+    engine = get_engine()
+    with Session(engine) as session:
+        statement = select(Choice).where(Choice.question_id.in_(question_ids)).where(Choice.is_answer == True)
+        result = session.scalars(statement)
+        rows = result.all()
+    return {row.question_id: row.id for row in rows}
