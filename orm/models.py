@@ -1,6 +1,15 @@
+"""
+Define the relational models/tables.
+
+The relational models used are:
+- Question
+- Choice
+- User
+- UserAnswer
+"""
+import enum
 from typing import List
 from typing import Optional
-import enum
 from datetime import datetime
 
 from sqlalchemy import DateTime, Text, ForeignKey, func, Enum, String
@@ -14,6 +23,11 @@ class Base(DeclarativeBase):
 
 
 class Question(Base):
+    """
+    Represent a Question.
+
+    A question can have many choices.
+    """
     __tablename__ = 'questions'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -28,6 +42,11 @@ class Question(Base):
 
 
 class Choice(Base):
+    """
+    Represent a Choice.
+
+    A choice has many-to-one relationship with question.
+    """
     __tablename__ = 'choices'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -40,6 +59,9 @@ class Choice(Base):
 
 
 class User(Base):
+    """
+    Represent a user who interacts with the system.
+    """
     __tablename__ = "auth_user"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -53,6 +75,12 @@ class User(Base):
 
 
 class UserAnswer(Base):
+    """
+    Represent a particular choice selected for a question by a particular user.
+
+    Ideally there should be a unique on (user_id, question_id, choice_id). However anonymous users are also represented by a non-null
+    user_id. Hence we cannot put this constraint at database level.
+    """
     __tablename__ = "user_answers"
 
     id: Mapped[int] = mapped_column(primary_key=True)
