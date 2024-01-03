@@ -98,7 +98,8 @@ def create_instance(model, data: dict) -> int:
             session.commit()
             created_id = instance.id
         except Exception as exc:
-            pass
+            # logger.error() is the right candidate to be used here.
+            print(exc)
     return created_id
 
 

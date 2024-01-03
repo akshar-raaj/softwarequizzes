@@ -72,7 +72,10 @@ def register_user(email: str, password: str):
     hashed_password = get_password_hash(password)
     data = {"email": email, "password": hashed_password}
     created_id = create_instance(User, data)
-    user = read_user(email)
+    if created_id is None:
+        return None, "Something went wrong"
+    # As we are only encoding user.email, hence this is not needed.
+    # Still doing it in case we want to encode more user attributes.
+    user = read_user(pk=created_id)
     data = {"sub": user.email}
     return encode_token(data), ""
-    # return created_id, ""
