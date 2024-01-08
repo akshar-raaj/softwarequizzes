@@ -7,16 +7,19 @@ For select multiple rows, it's name should be list_*.
 For update rows, it's name should be update_*.
 For delete rows, it's name should be delete_*.
 """
+import json
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from orm.models import Choice, Question, User, UserAnswer
 from orm.engine import get_engine
+from orm.queries import list_questions as list_questions_query
 
-from pydantic_types import UserAnswerType, UserAnswerTypeBulk
+from pydantic_types import UserAnswerType, UserAnswerTypeBulk, QuestionReadType, ChoiceReadType
 
 from enums import OrderDirection, DifficultyLevel
 from constants import PLACEHOLDER_USER_EMAIL
+from cache import set_string, get_string
 
 
 def create_question_choices(question_id: int, choices):
@@ -65,29 +68,48 @@ def read_user(email: str = None, pk: int = None) -> User:
     return user
 
 
-def list_questions(order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, category: str = None, difficulty_level: DifficultyLevel = None):
-    engine = get_engine()
-    statement = select(Question).options(selectinload(Question.choices))
-    if order_by and order_direction:
-        order_by_column = getattr(Question, order_by)
-        if order_direction == OrderDirection.ASC:
-            statement = statement.order_by(order_by_column)
-        elif order_direction == OrderDirection.DESC:
-            statement = statement.order_by(order_by_column.desc())
-    if limit:
-        statement = statement.limit(limit)
-    if offset:
-        statement = statement.offset(offset)
-    if subdomain:
-        statement = statement.where(Question.subdomain == subdomain)
-    else:
-        statement = statement.where(Question.subdomain.in_(['python', 'javascript', 'sql']))
-    if difficulty_level:
-        statement = statement.where(Question.level == difficulty_level)
-    with Session(engine) as session:
-        result = session.scalars(statement)
-        questions = result.all()
-    return questions
+def list_questions(**kwargs):
+    """
+    We want to avoid calls to the database. This provides the following benefits:
+    1. Reduce database load and hence allowing the database to handle more load.
+    2. Reduce the response time from the application by reducing calls to the database.
+
+    This method performs the following:
+    1. Retrieve questions from the database.
+    2. Cache the questions with an expiration time
+    3. Retrieve questions from the cache if present in cache.
+
+    We are performing query caching with cache-aside. It's not read-through or write-through.
+    """
+    subdomain = kwargs.get("subdomain", "")
+    difficulty_level = kwargs.get("difficulty_level")
+    difficulty_level = (difficulty_level and difficulty_level.name) or ""
+    limit = kwargs.get("limit", "")
+    offset = kwargs.get("offset", "")
+    order_by = kwargs.get("order_by", "")
+    order_direction = kwargs.get("order_direction")
+    order_direction = (order_direction and order_direction.name) or ""
+    key = f'questions-{subdomain}-{difficulty_level}-{order_by}-{order_direction}-{limit}-{offset}'
+    dumped = get_string(key)
+    if dumped:
+        print("From cache")
+        question_type_list = json.loads(dumped)
+        question_types = [QuestionReadType(**each) for each in question_type_list]
+        return question_types
+    print("From database")
+    questions = list_questions_query(**kwargs)
+    # The above is a SQLAlchemy Question instances and cannot be serialized. Thus convert it to Pydantic type which is easier to serialize.
+    question_types = []
+    for question in questions:
+        choice_types = []
+        for choice in question.choices:
+            choice_type = ChoiceReadType(id=choice.id, text=choice.text)
+            choice_types.append(choice_type)
+        qr = QuestionReadType(id=question.id, text=question.text, snippet=question.snippet, explanation=question.explanation, choices=choice_types)
+        question_types.append(qr)
+    model_dump_list = [qt.model_dump() for qt in question_types]
+    set_string(key, json.dumps(model_dump_list))
+    return question_types
 
 
 def create_instance(model, data: dict) -> int:

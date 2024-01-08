@@ -10,3 +10,6 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 ALGORITHM = "HS256"
 PLACEHOLDER_USER_EMAIL = "placeholder@softwarequizzes.com"
 ADMIN_EMAIL = "raaj.akshar@gmail.com"
+REDIS_HOST = os.environ['REDIS_HOST']
+REDIS_PORT = os.environ['REDIS_PORT']
+DEFAULT_SUBDOMAINS = ['python', 'javascript', 'sql']

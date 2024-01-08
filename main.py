@@ -56,25 +56,20 @@ def post_choices(question_id: int, choices: ChoicesType, user: Annotated[User, D
 
 
 @app.get("/questions")
-def get_questions(user: Annotated[User, Depends(get_current_user)], order_by=Question.created_at.name, order_direction=OrderDirection.DESC, limit=20, offset=0, subdomain=None, category=None, difficulty_level=None):
-    questions = list_questions(order_by=order_by, order_direction=order_direction, limit=limit, offset=offset, subdomain=subdomain, category=category, difficulty_level=difficulty_level)
-    to_return = []
+def get_questions(user: Annotated[User, Depends(get_current_user)], order_by=Question.created_at.name, order_direction=OrderDirection.DESC, limit=20, offset=0, subdomain=None, difficulty_level=None):
+    questions = list_questions(order_by=order_by, order_direction=order_direction, limit=limit, offset=offset, subdomain=subdomain, difficulty_level=difficulty_level)
     question_ids = [question.id for question in questions]
     question_answer_map = fetch_user_answers(question_ids, user)
     if user.email != PLACEHOLDER_USER_EMAIL:
         question_correct_choice_map = fetch_correct_answers(question_ids)
     for question in questions:
-        choice_types = []
-        for choice in question.choices:
-            choice_type = ChoiceReadType(id=choice.id, text=choice.text)
-            choice_types.append(choice_type)
-        answer_id=question_answer_map.get(question.id)
+        answer_id = question_answer_map.get(question.id)
         correct_choice = None
         if user.email != PLACEHOLDER_USER_EMAIL:
             correct_choice = question_correct_choice_map.get(question.id)
-        question_type = QuestionReadType(id=question.id, text=question.text, snippet=question.snippet, explanation=question.explanation, choices=choice_types, user_answer_id=answer_id, correct_answer_id=correct_choice)
-        to_return.append(question_type)
-    return to_return
+        question.user_answer_id = answer_id
+        question.correct_answer_id = correct_choice
+    return questions
 
 
 @app.post("/answers")
