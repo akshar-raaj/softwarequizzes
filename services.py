@@ -108,7 +108,7 @@ def list_questions(**kwargs):
         qr = QuestionReadType(id=question.id, text=question.text, snippet=question.snippet, explanation=question.explanation, choices=choice_types)
         question_types.append(qr)
     model_dump_list = [qt.model_dump() for qt in question_types]
-    set_string(key, json.dumps(model_dump_list))
+    set_string(key, json.dumps(model_dump_list), expire=5*60)
     return question_types
 
 
