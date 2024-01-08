@@ -81,7 +81,7 @@ def list_questions(**kwargs):
 
     We are performing query caching with cache-aside. It's not read-through or write-through.
     """
-    subdomain = kwargs.get("subdomain", "")
+    subdomain = kwargs.get("subdomain") or ""
     difficulty_level = kwargs.get("difficulty_level")
     difficulty_level = (difficulty_level and difficulty_level.name) or ""
     limit = kwargs.get("limit", "")
