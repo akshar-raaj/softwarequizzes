@@ -11,17 +11,17 @@ import json
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from orm.models import Choice, Question, User, UserAnswer
 from orm.engine import get_engine
+from orm.models import Base, Choice, Question, User, UserAnswer
 from orm.queries import list_questions as list_questions_query
 
-from pydantic_types import UserAnswerType, UserAnswerTypeBulk, QuestionReadType, ChoiceReadType
+from pydantic_types import UserAnswerType, UserAnswerTypeBulk, QuestionReadType, ChoiceReadType, ChoiceWriteType
 
 from constants import PLACEHOLDER_USER_EMAIL
 from cache import set_string, get_string
 
 
-def create_question_choices(question_id: int, choices):
+def create_question_choices(question_id: int, choices: list[ChoiceWriteType]) -> tuple[bool, str]:
     INVALID_QUESTION_ID = "Invalid question id"
     ERROR_MESSAGE = "Something is wrong"
     engine = get_engine()
@@ -67,7 +67,7 @@ def read_user(email: str = None, pk: int = None) -> User:
     return user
 
 
-def list_questions(**kwargs):
+def list_questions(**kwargs) -> list[QuestionReadType]:
     """
     We want to avoid calls to the database. This provides the following benefits:
     1. Reduce database load and hence allowing the database to handle more load.
@@ -91,11 +91,9 @@ def list_questions(**kwargs):
     key = f'questions-{subdomain}-{difficulty_level}-{order_by}-{order_direction}-{limit}-{offset}'
     dumped = get_string(key)
     if dumped:
-        print("From cache")
         question_type_list = json.loads(dumped)
         question_types = [QuestionReadType(**each) for each in question_type_list]
         return question_types
-    print("From database")
     questions = list_questions_query(**kwargs)
     # The above is a SQLAlchemy Question instances and cannot be serialized. Thus convert it to Pydantic type which is easier to serialize.
     question_types = []
@@ -111,7 +109,7 @@ def list_questions(**kwargs):
     return question_types
 
 
-def create_instance(model, data: dict) -> int:
+def create_instance(model: Base, data: dict) -> int:
     engine = get_engine()
     instance = model(**data)
     created_id = None
@@ -121,12 +119,13 @@ def create_instance(model, data: dict) -> int:
             session.commit()
             created_id = instance.id
         except Exception as exc:
+            # Possible due to invalid data being passed. Example: A non-nullable column is passed as None.
             # logger.error() is the right candidate to be used here.
             print(exc)
     return created_id
 
 
-def create_user_answer(user: User, user_answer: UserAnswerType):
+def create_user_answer(user: User, user_answer: UserAnswerType) -> tuple[bool, str]:
     INVALID_QUESTION_ID = "Invalid question id"
     INVALID_CHOICE_ID = "Invalid choice id"
     ERROR_MESSAGE = "Something is wrong"
