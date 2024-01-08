@@ -2,7 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload, Session
 
 from orm.engine import get_engine
-from orm.models import Question
+from orm.models import Question, User
+
 from enums import OrderDirection, DifficultyLevel
 from constants import DEFAULT_SUBDOMAINS
 
@@ -30,3 +31,14 @@ def list_questions(order_by: str = Question.created_at.name, order_direction: Or
         result = session.scalars(statement)
         questions = result.all()
     return questions
+
+
+def read_user(email: str = None, pk: int = None) -> User:
+    engine = get_engine()
+    if email is not None:
+        statement = select(User).where(User.email == email)
+    if pk is not None:
+        statement = select(User).where(User.id == pk)
+    with Session(engine) as session:
+        user = session.scalars(statement).first()
+    return user

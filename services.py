@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session, selectinload
 from orm.engine import get_engine
 from orm.models import Base, Choice, Question, User, UserAnswer
 from orm.queries import list_questions as list_questions_query
+from orm.queries import read_user as read_user_query
 
 from pydantic_types import UserAnswerType, UserAnswerTypeBulk, QuestionReadType, ChoiceReadType, ChoiceWriteType
 
@@ -57,13 +58,7 @@ def read_user(email: str = None, pk: int = None) -> User:
     # XOR
     if not (bool(email) != bool(pk)):
         raise AssertionError('Either email or id should be provided. Both should not be provided.')
-    engine = get_engine()
-    if email is not None:
-        statement = select(User).where(User.email == email)
-    if pk is not None:
-        statement = select(User).where(User.id == pk)
-    with Session(engine) as session:
-        user = session.scalars(statement).first()
+    user = read_user_query(email, pk)
     return user
 
 
