@@ -17,7 +17,6 @@ from orm.queries import list_questions as list_questions_query
 
 from pydantic_types import UserAnswerType, UserAnswerTypeBulk, QuestionReadType, ChoiceReadType
 
-from enums import OrderDirection, DifficultyLevel
 from constants import PLACEHOLDER_USER_EMAIL
 from cache import set_string, get_string
 

@@ -3,10 +3,10 @@ from fastapi import FastAPI, status, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 
-from pydantic_types import QuestionType, ChoicesType, RegisterUser, UserAnswerType, UserAnswerTypeBulk, ChoiceReadType, QuestionReadType
+from pydantic_types import ChoicesType, RegisterUser, UserAnswerType, UserAnswerTypeBulk, QuestionWriteType
 
 from orm.models import Question, User
-from enums import OrderDirection
+from enums import OrderDirection, DifficultyLevel
 
 from services import create_question_choices, read_question, list_questions, create_instance, create_user_answer, create_user_answers, fetch_user_answers, fetch_correct_answers
 from auth import register_user, get_current_user, authenticate
@@ -34,7 +34,7 @@ def home():
 
 
 @app.post("/questions")
-def post_question(question: QuestionType, user: Annotated[User, Depends(get_current_user)]):
+def post_question(question: QuestionWriteType, user: Annotated[User, Depends(get_current_user)]):
     if user.email != ADMIN_EMAIL:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     question_id = create_instance(Question, {'text': question.text, 'subdomain': question.subdomain, 'level': question.level, 'explanation': question.explanation, 'snippet': question.snippet})
@@ -56,7 +56,7 @@ def post_choices(question_id: int, choices: ChoicesType, user: Annotated[User, D
 
 
 @app.get("/questions")
-def get_questions(user: Annotated[User, Depends(get_current_user)], order_by=Question.created_at.name, order_direction=OrderDirection.DESC, limit=20, offset=0, subdomain=None, difficulty_level=None):
+def get_questions(user: Annotated[User, Depends(get_current_user)], order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str | None = None, difficulty_level: DifficultyLevel | None = None):
     questions = list_questions(order_by=order_by, order_direction=order_direction, limit=limit, offset=offset, subdomain=subdomain, difficulty_level=difficulty_level)
     question_ids = [question.id for question in questions]
     question_answer_map = fetch_user_answers(question_ids, user)
