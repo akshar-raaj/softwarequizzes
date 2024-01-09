@@ -96,6 +96,11 @@ API Documentation can be accessed at:
 
 This application is deployed at api.softwarequizzes.com.
 
+## Architecture
+
+![softwarequizzes](https://github.com/akshar-raaj/softwarequizzes/assets/889120/d08399b8-8c3f-4cff-9c8c-cae80d06b75d)
+
+
 The docs can be accessed at:
 
     http://api.softwarequizzes.com/docs
