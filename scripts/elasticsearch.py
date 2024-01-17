@@ -15,9 +15,9 @@ def populate_questions():
     offset = 0
     while True:
         questions = list_questions(order_direction=OrderDirection.ASC, limit=PER_PAGE, offset=offset, all_subdomains=True)
-        print(questions)
         for question in questions:
-            data = {'text': question.text}
+            choices = [choice.text for choice in question.choices]
+            data = {'text': question.text, 'subdomain': question.subdomain, 'choices': choices}
             _id = question.id
             url = f'{ES_ENDPOINT}/questions/_doc/{_id}'
             resp = requests.put(url, json=data, headers={'Authorization': f'Basic {ES_AUTH_TOKEN}'})
