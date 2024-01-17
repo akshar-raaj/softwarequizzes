@@ -20,7 +20,7 @@ def populate_questions():
             data = {'text': question.text}
             _id = question.id
             url = f'{ES_ENDPOINT}/questions/_doc/{_id}'
-            resp = requests.put(url, json=data, headers={'Authorization': f'Bearer {ES_AUTH_TOKEN}'})
+            resp = requests.put(url, json=data, headers={'Authorization': f'Basic {ES_AUTH_TOKEN}'})
         if len(questions) == 0:
             break
         offset += PER_PAGE
