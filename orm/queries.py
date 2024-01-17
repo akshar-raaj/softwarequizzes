@@ -8,7 +8,7 @@ from enums import OrderDirection, DifficultyLevel
 from constants import DEFAULT_SUBDOMAINS
 
 
-def list_questions(order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, difficulty_level: DifficultyLevel = None):
+def list_questions(order_by: str = Question.created_at.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, difficulty_level: DifficultyLevel = None, all_subdomains=False):
     engine = get_engine()
     statement = select(Question).options(selectinload(Question.choices))
     if order_by and order_direction:
@@ -21,10 +21,14 @@ def list_questions(order_by: str = Question.created_at.name, order_direction: Or
         statement = statement.limit(limit)
     if offset:
         statement = statement.offset(offset)
-    if subdomain:
-        statement = statement.where(Question.subdomain == subdomain)
+    if all_subdomains is False:
+        if subdomain:
+            statement = statement.where(Question.subdomain == subdomain)
+        else:
+            statement = statement.where(Question.subdomain.in_(DEFAULT_SUBDOMAINS))
     else:
-        statement = statement.where(Question.subdomain.in_(DEFAULT_SUBDOMAINS))
+        # Do not apply filter on subdomains
+        pass
     if difficulty_level:
         statement = statement.where(Question.level == difficulty_level)
     with Session(engine) as session:
