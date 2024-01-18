@@ -104,3 +104,52 @@ This application is deployed at api.softwarequizzes.com.
 The docs can be accessed at:
 
     http://api.softwarequizzes.com/docs
+
+
+## Database Replication
+
+Our transactional database is MySQL.
+
+We have configured replication for reliability and high availability.
+
+The following link mentions the steps needed to configure replication.
+
+https://dev.mysql.com/doc/refman/8.0/en/replication-configuration.html
+
+### Source database server
+
+We created a snapshot on the source database. The relevant dump file is dbdump.db
+
+### Replica database server
+
+Install MySQL server
+
+https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04
+
+Change data directory of MySQL to point to EBS
+
+https://www.digitalocean.com/community/tutorials/how-to-move-a-mysql-data-directory-to-a-new-location-on-ubuntu-20-04
+
+Steps:
+
+    sudo rm -rf /data/mysql/
+    sudo rsync -av /var/lib/mysql /data/
+    sudo systemctl start mysql.service
+    sudo mysql < dbdump.db
+
+Issue the following commands:
+
+    mysql> set global server_id = 2;
+    mysql> change replication source to
+    -> source_host = '<ip>',
+    -> source_user = 'repl',
+    -> source_password = '<pass>',
+    -> source_log_file = 'binlog.000038',
+    -> source_log_pos = 893,
+    -> GET_MASTER_PUBLIC_KEY=1;
+
+Issue start replica command
+
+    mysql> start replica;
+
+The replica should catch-up with the master soon.
