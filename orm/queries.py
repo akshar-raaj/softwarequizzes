@@ -9,7 +9,7 @@ from constants import DEFAULT_SUBDOMAINS
 
 
 def list_questions(order_by: str = Question.id.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, difficulty_level: DifficultyLevel = None, all_subdomains=False):
-    engine = get_engine()
+    engine = get_engine(replica=True)
     statement = select(Question).options(selectinload(Question.choices))
     if order_by and order_direction:
         order_by_column = getattr(Question, order_by)
@@ -38,7 +38,7 @@ def list_questions(order_by: str = Question.id.name, order_direction: OrderDirec
 
 
 def read_user(email: str = None, pk: int = None) -> User:
-    engine = get_engine()
+    engine = get_engine(replica=True)
     if email is not None:
         statement = select(User).where(User.email == email)
     if pk is not None:
