@@ -16,9 +16,12 @@ def get_engine(echo=False):
 
 def set_string(key, value, expire: int = None):
     engine = get_engine()
-    engine.set(key, value)
-    if expire is not None:
-        engine.expire(key, expire)
+    try:
+        engine.set(key, value)
+        if expire is not None:
+            engine.expire(key, expire)
+    except RedisConnectionError:
+        pass
 
 
 def get_string(key):
