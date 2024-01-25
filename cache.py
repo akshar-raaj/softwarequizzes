@@ -1,4 +1,5 @@
 import redis
+from redis import ConnectionError as RedisConnectionError
 
 from constants import REDIS_HOST, REDIS_PORT
 
@@ -22,4 +23,7 @@ def set_string(key, value, expire: int = None):
 
 def get_string(key):
     engine = get_engine()
-    return engine.get(key)
+    try:
+        return engine.get(key)
+    except RedisConnectionError:
+        return None
