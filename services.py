@@ -83,7 +83,7 @@ def list_questions(**kwargs) -> list[QuestionReadType]:
     order_by = kwargs.get("order_by", "")
     order_direction = kwargs.get("order_direction")
     order_direction = (order_direction and order_direction.name) or ""
-    key = f'questions-{subdomain}-{difficulty_level}-{order_by}-{order_direction}-{limit}-{offset}'
+    key = f'questions:{subdomain}:{difficulty_level}:{order_by}:{order_direction}:{limit}:{offset}'
     dumped = get_string(key)
     if dumped:
         question_type_list = json.loads(dumped)
