@@ -1,19 +1,20 @@
 ## About
 
-This repository powers backend of softwarequizes.com
+This repository powers backend of softwarequizes.com.
+
+The APIs are hosted at http://api.softwarequizzes.com/docs.
 
 ## Features
 
-The application will allow the following operations:
-- Show questions
-- Show choices relevant to a question
-- Allow users to answer a question
-- Check if the answer is correct or not
-- Track score of users
-- Allow user registration
-- Allow user login
+The application allows the following operations:
+- Create question
+- Create question choices
+- List questions
+- List question choices
+- User registration
+- User login
+- Answer a question
 - Track user's progress
-- Save and persist user's progress
 - Generate report
 
 ## Tech Stack
@@ -21,9 +22,10 @@ The application will allow the following operations:
 Programming Language: Python
 API Framework: FastAPI
 Transactional Database: MySQL
+Cache and session storage: Redis
+Search Engine: Elasticsearch
 SQL Toolkit: SQLAlchemy
-Web Server: Gunicorn
-Reverse Proxy and Load Balancer: Nginx
+
 
 ### Python
 
@@ -39,7 +41,11 @@ And it exploits Python's type hints and stands on shoulders of giants like Pydan
 
 ### MySQL
 
-A transactional database providing strong ACID guarantees.
+A relational database providing strong ACID guarantees.
+
+## Deployment Stack
+Web Server: Gunicorn
+Reverse Proxy and Load Balancer: Nginx
 
 ## Setup
 
@@ -47,17 +53,31 @@ Install the requirements
 
     pip install -r requirements.txt
 
+Copy the contents of `.env.example` to `.env`.
+
+Ensure you provide appropriate values for the following in `.env`
+- DATABASE_CONNECTION_STRING
+- SECRET_KEY
+- REDIS_HOST
+- REDIS_PORT
+
 ## Server
 
 The server can be started using the following command:
 
     uvicorn main:app --reload --port 8000
 
-This would start the server. Serveer would accept connections on port 8000.
+This would start the server. Server would accept connections on port 8000.
 
 You should be able to get response using following command:
 
     curl -X GET http://localhost:8000/
+
+## API Documentation
+
+API Documentation can be accessed at:
+
+    http://localhost:8000/docs
 
 ## Production deployment
 
@@ -86,12 +106,6 @@ Nginx configuration file would look like:
             }
     }
 
-## API Documentation
-
-API Documentation can be accessed at:
-
-    http://localhost:8000/docs
-
 ## Production documentation
 
 This application is deployed at api.softwarequizzes.com.
@@ -99,11 +113,6 @@ This application is deployed at api.softwarequizzes.com.
 ## Architecture
 
 ![softwarequizzes](https://github.com/akshar-raaj/softwarequizzes/assets/889120/d08399b8-8c3f-4cff-9c8c-cae80d06b75d)
-
-
-The docs can be accessed at:
-
-    http://api.softwarequizzes.com/docs
 
 
 ## Database Replication
