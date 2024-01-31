@@ -3,20 +3,22 @@ from pydantic import BaseModel
 from enums import DifficultyLevel
 
 
-# Used to create a choice for question.
+# Choice base type
 class ChoiceType(BaseModel):
     text: str
 
 
+# Represents a single choice when creating question choices
 class ChoiceWriteType(ChoiceType):
     is_answer: bool
 
 
+# Used when choices are read
 class ChoiceReadType(ChoiceType):
     id: int
 
 
-# Used to create choices for a question
+# Used to create question choices
 class ChoicesType(BaseModel):
     choices: list[ChoiceWriteType]
 
