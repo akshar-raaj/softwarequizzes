@@ -1,3 +1,8 @@
+"""
+Deal with SQLAlchemy engine.
+
+SQLAlchemy engine manages connectivity with the database and provides mechanism to execute queries.
+"""
 from sqlalchemy import create_engine
 
 from constants import DATABASE_CONNECTION_STRING, DATABASE_REPLICA_CONNECTION_STRING
