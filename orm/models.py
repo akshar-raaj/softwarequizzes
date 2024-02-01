@@ -35,6 +35,8 @@ class Question(Base):
     snippet: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    # TODO: Add index on subdomain
+    # We filter on subdomain very frequently
     subdomain: Mapped[str] = mapped_column(String(20))
     explanation: Mapped[Optional[str]] = mapped_column(Text)
     level: Mapped[enum.Enum] = mapped_column(Enum(DifficultyLevel))

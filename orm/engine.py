@@ -5,14 +5,20 @@ SQLAlchemy engine manages connectivity with the database and provides mechanism 
 """
 from sqlalchemy import create_engine
 
-from constants import DATABASE_CONNECTION_STRING, DATABASE_REPLICA_CONNECTION_STRING
+from constants import DATABASE_CONNECTION_STRING, DATABASE_REPLICA_CONNECTION_STRING, ENVIRONMENT, PRODUCTION_ENVIRONMENT
 
 
 _engine = None
 _replica_engine = None
 
 
-def get_engine(echo=False, replica=False):
+def get_engine(echo=None, replica=False):
+    if echo is None:
+        # It hasn't been explicitly passed, hence determine it based on the environment
+        if ENVIRONMENT == PRODUCTION_ENVIRONMENT:
+            echo = False
+        else:
+            echo = True
     global _engine
     global _replica_engine
     if replica is True:

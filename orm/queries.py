@@ -10,6 +10,7 @@ from constants import DEFAULT_SUBDOMAINS
 
 def list_questions(order_by: str = Question.id.name, order_direction: OrderDirection = OrderDirection.DESC, limit: int = 20, offset: int = 0, subdomain: str = None, difficulty_level: DifficultyLevel = None, all_subdomains=False):
     engine = get_engine(replica=True)
+    # selectinload is used to avoid N+1 query problem.
     statement = select(Question).options(selectinload(Question.choices))
     if order_by and order_direction:
         order_by_column = getattr(Question, order_by)
