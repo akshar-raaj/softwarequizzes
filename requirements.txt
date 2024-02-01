@@ -1,3 +1,5 @@
+# Explicitly declare and isolate dependencies
+# https://12factor.net/dependencies
 fastapi
 uvicorn[standard]
 python-dotenv
