@@ -34,3 +34,4 @@ ALGORITHM = "HS256"
 ADMIN_EMAIL = "raaj.akshar@gmail.com"
 DEFAULT_SUBDOMAINS = ['python', 'javascript', 'sql']
 PLACEHOLDER_USER_EMAIL = "placeholder@softwarequizzes.com"
+REDIS_REGISTERED_USERS_KEY = 'registered-users'

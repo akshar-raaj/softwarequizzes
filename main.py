@@ -113,7 +113,7 @@ def register(user: RegisterUser):
 
 @app.post("/token")
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    token, message = authenticate(form_data)
+    token, message = authenticate(form_data.username, form_data.password)
     if token is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
     return {"access_token": token, "token_type": "bearer"}
