@@ -65,7 +65,20 @@ def authenticate(form_data: OAuth2PasswordRequestForm) -> dict:
     return encode_token(data), ""
 
 
-def register_user(email: str, password: str):
+def register_user(email: str, password: str) -> tuple[str | None, str]:
+    """
+    Create a user.
+
+    Peforms the following checks before creating the user:
+    1. A user must not exist with the provided email.
+
+    Once the user is created, it creates a JWT token.
+    The token has the following fields:
+    - sub
+
+    Return a tuple with two fields:
+    (token, message)
+    """
     user = read_user(email)
     if user is not None:
         return None, "Email already taken"

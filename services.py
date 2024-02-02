@@ -64,7 +64,7 @@ def read_user(email: str = None, pk: int = None) -> User:
 
 def list_questions(**kwargs) -> list[QuestionReadType]:
     """
-    We want to avoid calls to the database. This provides the following benefits:
+    We want to avoid calls to the database. Caching provides the following benefits:
     1. Reduce database load and hence allowing the database to handle more load.
     2. Reduce the response time from the application by reducing calls to the database.
 
